@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>뮤플비 모의견적 계산기</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-2: #f0f4f8;
+      --text: #1d2430;
+      --muted: #697386;
+      --line: #d8dee8;
+      --primary: #146c94;
+      --primary-2: #0f5f50;
+      --accent: #b35c2e;
+      --warn: #a04444;
+      --ok: #2f7d5a;
+      --shadow: 0 8px 24px rgba(29, 36, 48, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: #202833;
+      color: #f6f8fb;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #e5a044;
+      color: #202833;
+      font-weight: 700;
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 2px;
+      color: #bcc7d7;
+      font-size: 13px;
+    }
+
+    .nav-note {
+      margin: 0;
+      color: #d3dbe7;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .preset-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: #f6f8fb;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .preset-btn:hover,
+    .preset-btn[aria-pressed="true"] {
+      border-color: #e5a044;
+      background: rgba(229,160,68,0.18);
+    }
+
+    main {
+      padding: 28px;
+      display: grid;
+      gap: 20px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .result-pill {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: 8px;
+      padding: 14px 16px;
+      min-width: 260px;
+    }
+
+    .result-pill span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .result-pill strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(330px, 430px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      padding: 18px 18px 0;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .panel-body {
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .field-label output {
+      color: var(--primary);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--primary);
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .segmented button {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 8px;
+      cursor: pointer;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .checks {
+      display: grid;
+      gap: 10px;
+    }
+
+    .check-row {
+      display: grid;
+      grid-template-columns: 20px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .check-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .check-row label {
+      font-weight: 500;
+    }
+
+    .check-row small {
+      color: var(--muted);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 20px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr) 110px;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .track {
+      height: 10px;
+      border-radius: 999px;
+      background: #e0e6ef;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: var(--primary);
+    }
+
+    .fill.prod { background: var(--primary-2); }
+    .fill.post { background: var(--accent); }
+
+    .bar-row strong {
+      text-align: right;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .guardrail {
+      border-left: 4px solid var(--ok);
+      background: #eef8f3;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #244a38;
+      line-height: 1.45;
+    }
+
+    .guardrail.warn {
+      border-left-color: var(--warn);
+      background: #fff0f0;
+      color: #673333;
+    }
+
+    .line-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 620px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      font-weight: 500;
+      background: #fbfcfe;
+    }
+
+    td.num, th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        padding: 18px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 16px;
+      }
+
+      .result-pill {
+        width: 100%;
+      }
+
+      .summary-grid,
+      .segmented {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 84px minmax(0, 1fr);
+      }
+
+      .bar-row strong {
+        grid-column: 2;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">MV</div>
+        <div>
+          <strong>뮤플비</strong>
+          <span>모의견적 시스템</span>
+        </div>
+      </div>
+      <p class="nav-note">
+        고객이 필요한 제작 옵션을 고르면 견적서 항목 기준으로 예상 금액이 즉시 계산됩니다.
+      </p>
+      <div class="preset-list" aria-label="빠른 구성">
+        <button class="preset-btn" type="button" data-preset="brand" aria-pressed="true">홍보영상 기본</button>
+        <button class="preset-btn" type="button" data-preset="event" aria-pressed="false">행사 스케치</button>
+        <button class="preset-btn" type="button" data-preset="edit" aria-pressed="false">편집만</button>
+        <button class="preset-btn" type="button" data-preset="product" aria-pressed="false">제품홍보 촬영</button>
+      </div>
+    </aside>
+
+    <main>
+      <section class="topbar">
+        <div>
+          <h1>실시간 예상견적</h1>
+          <p class="subtitle">촬영일수, 성우, 드론, 사진 촬영 같은 옵션을 조정하면 바로 견적이 갱신됩니다.</p>
+        </div>
+        <div class="result-pill" aria-live="polite">
+          <span>예상 견적가 VAT 포함</span>
+          <strong id="totalIncVat">0원</strong>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">옵션 선택</h2>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label class="field-label" for="category">영상 유형</label>
+              <select id="category">
+                <option value="brand">홍보/브랜딩</option>
+                <option value="event">행사/스케치</option>
+                <option value="edu">강의/교육</option>
+                <option value="product">제품홍보</option>
+                <option value="shortform">숏폼/SNS/유튜브</option>
+                <option value="motion">모션그래픽</option>
+                <option value="edit">편집중심</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <label for="shootDays">촬영 필요일수</label>
+                <output id="shootDaysOut">1일</output>
+              </div>
+              <input id="shootDays" type="range" min="0" max="7" step="1" value="1">
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <label for="runtime">완성 영상 길이</label>
+                <output id="runtimeOut">3분</output>
+              </div>
+              <input id="runtime" type="range" min="1" max="15" step="1" value="3">
+            </div>
+
+            <div class="field">
+              <div class="field-label">
+                <label for="deliverables">납품본 개수</label>
+                <output id="deliverablesOut">1개</output>
+              </div>
+              <input id="deliverables" type="range" min="1" max="8" step="1" value="1">
+            </div>
+
+            <div class="field">
+              <span class="field-label">제작 난이도</span>
+              <div class="segmented" id="complexityGroup">
+                <button type="button" data-complexity="simple" aria-pressed="false">단순</button>
+                <button type="button" data-complexity="normal" aria-pressed="true">일반</button>
+                <button type="button" data-complexity="advanced" aria-pressed="false">연출/고급</button>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label">추가 옵션</span>
+              <div class="checks">
+                <div class="check-row">
+                  <input id="planning" type="checkbox" checked>
+                  <label for="planning">기획/구성</label>
+                  <small>기획료, 콘티</small>
+                </div>
+                <div class="check-row">
+                  <input id="voice" type="checkbox">
+                  <label for="voice">성우 내레이션</label>
+                  <small>성우료, 녹음료</small>
+                </div>
+                <div class="check-row">
+                  <input id="drone" type="checkbox">
+                  <label for="drone">드론 촬영</label>
+                  <small>드론</small>
+                </div>
+                <div class="check-row">
+                  <input id="photo" type="checkbox">
+                  <label for="photo">사진 촬영 포함</label>
+                  <small>포토</small>
+                </div>
+                <div class="check-row">
+                  <input id="model" type="checkbox">
+                  <label for="model">모델/분장 필요</label>
+                  <small>모델, 분장팀</small>
+                </div>
+                <div class="check-row">
+                  <input id="place" type="checkbox">
+                  <label for="place">장소 대여 필요</label>
+                  <small>장소대여</small>
+                </div>
+                <div class="check-row">
+                  <input id="motionPack" type="checkbox" checked>
+                  <label for="motionPack">2D 그래픽/자막</label>
+                  <small>2D, 색보정</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">견적 결과</h2>
+          </div>
+          <div class="panel-body">
+            <div class="summary-grid">
+              <div class="metric">
+                <span>VAT 별도</span>
+                <strong id="subtotal">0원</strong>
+              </div>
+              <div class="metric">
+                <span>VAT 10%</span>
+                <strong id="vat">0원</strong>
+              </div>
+              <div class="metric">
+                <span>선택 옵션 수</span>
+                <strong id="lineCount">0개</strong>
+              </div>
+            </div>
+
+            <div class="bars" aria-label="제작 단계별 금액">
+              <div class="bar-row">
+                <span>Pre</span>
+                <div class="track"><div class="fill" id="preBar"></div></div>
+                <strong id="preTotal">0원</strong>
+              </div>
+              <div class="bar-row">
+                <span>Production</span>
+                <div class="track"><div class="fill prod" id="prodBar"></div></div>
+                <strong id="prodTotal">0원</strong>
+              </div>
+              <div class="bar-row">
+                <span>Post</span>
+                <div class="track"><div class="fill post" id="postBar"></div></div>
+                <strong id="postTotal">0원</strong>
+              </div>
+            </div>
+
+            <div id="guardrail" class="guardrail">과거 유사 견적 범위와 비교 중입니다.</div>
+
+            <div class="line-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>구분</th>
+                    <th>항목</th>
+                    <th class="num">수량</th>
+                    <th class="num">일수</th>
+                    <th class="num">단가</th>
+                    <th class="num">금액</th>
+                  </tr>
+                </thead>
+                <tbody id="lineRows"></tbody>
+              </table>
+            </div>
+            <p class="muted">실제 계약 견적은 촬영 장소, 일정, 레퍼런스 난이도, 수정 범위 확인 후 확정됩니다.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const rates = {
+      planning: 300000,
+      storyboard: 200000,
+      pd: 400000,
+      director: 800000,
+      cameraDirector: 800000,
+      cameraAssistant: 250000,
+      camera: 100000,
+      lens: 50000,
+      light: 100000,
+      edit: 300000,
+      graphic2d: 200000,
+      color: 100000,
+      music: 100000,
+      mastering: 50000,
+      voice: 250000,
+      recording: 50000,
+      drone: 200000,
+      photo: 1000000,
+      model: 400000,
+      makeup: 700000,
+      place: 500000,
+      meal: 10000,
+      fuel: 100000,
+      threeD: 2000000,
+      animation: 1200000
+    };
+
+    const guardrails = {
+      brand: { label: "홍보/브랜딩", p25: 2000000, median: 3600000, p75: 6100000 },
+      event: { label: "행사/스케치", p25: 1150000, median: 2350000, p75: 3100000 },
+      edu: { label: "강의/교육", p25: 1000000, median: 1236364, p75: 5600000 },
+      product: { label: "제품홍보", p25: 4500000, median: 5400000, p75: 8725000 },
+      shortform: { label: "숏폼/SNS/유튜브", p25: 2090909, median: 2500000, p75: 5625000 },
+      motion: { label: "모션그래픽", p25: 1302000, median: 1500000, p75: 4750000 },
+      edit: { label: "편집중심", p25: 1175000, median: 1772727, p75: 3550000 }
+    };
+
+    const presets = {
+      brand: { category: "brand", shootDays: 1, runtime: 3, deliverables: 1, complexity: "normal", planning: true, voice: false, drone: false, photo: false, model: false, place: false, motionPack: true },
+      event: { category: "event", shootDays: 1, runtime: 2, deliverables: 1, complexity: "simple", planning: false, voice: false, drone: false, photo: true, model: false, place: false, motionPack: true },
+      edit: { category: "edit", shootDays: 0, runtime: 3, deliverables: 1, complexity: "simple", planning: false, voice: false, drone: false, photo: false, model: false, place: false, motionPack: true },
+      product: { category: "product", shootDays: 1, runtime: 3, deliverables: 2, complexity: "advanced", planning: true, voice: false, drone: false, photo: false, model: true, place: true, motionPack: true }
+    };
+
+    const state = { complexity: "normal" };
+
+    const money = value => `${Math.round(value).toLocaleString("ko-KR")}원`;
+    const el = id => document.getElementById(id);
+
+    function runtimeMultiplier(minutes) {
+      if (minutes <= 1) return 0.8;
+      if (minutes <= 3) return 1;
+      if (minutes <= 5) return 1.2;
+      if (minutes <= 10) return 1.5;
+      return 2;
+    }
+
+    function complexityMultiplier(value) {
+      if (value === "simple") return 0.75;
+      if (value === "advanced") return 1.3;
+      return 1;
+    }
+
+    function addLine(lines, phase, item, qty, days, unit, multiplier = 1) {
+      const amount = qty * days * unit * multiplier;
+      if (amount <= 0) return;
+      lines.push({ phase, item, qty, days, unit, amount });
+    }
+
+    function buildLines() {
+      const category = el("category").value;
+      const shootDays = Number(el("shootDays").value);
+      const runtime = Number(el("runtime").value);
+      const deliverables = Number(el("deliverables").value);
+      const rt = runtimeMultiplier(runtime);
+      const cx = complexityMultiplier(state.complexity);
+      const lines = [];
+      const isEditOnly = category === "edit" || shootDays === 0;
+      const peopleDays = Math.max(shootDays, 1);
+
+      if (el("planning").checked && !isEditOnly) {
+        addLine(lines, "Pre", "기획료", 1, 1, rates.planning, cx);
+        if (state.complexity !== "simple") addLine(lines, "Pre", "콘티", 1, 1, rates.storyboard, cx);
+      }
+
+      if (!isEditOnly) {
+        if (state.complexity === "advanced") addLine(lines, "Production", "PD", 1, peopleDays, rates.pd);
+        addLine(lines, "Production", "촬영감독", 1, shootDays, rates.cameraDirector);
+        if (state.complexity !== "simple") addLine(lines, "Production", "촬영부", 1, shootDays, rates.cameraAssistant);
+        addLine(lines, "Production", "카메라", 1, shootDays, rates.camera);
+        addLine(lines, "Production", "렌즈", 1, shootDays, rates.lens);
+        if (state.complexity === "advanced") addLine(lines, "Production", "조명", 2, shootDays, rates.light);
+        addLine(lines, "Production", "식비", Math.max(2, state.complexity === "advanced" ? 5 : 3), shootDays, rates.meal);
+        addLine(lines, "Production", "유류비", 1, shootDays, rates.fuel);
+      }
+
+      addLine(lines, "Post", "편집료", 1, 1, rates.edit, rt * cx);
+      if (el("motionPack").checked) {
+        addLine(lines, "Post", "2D", 1, 1, rates.graphic2d, rt * cx);
+        addLine(lines, "Post", "색보정", 1, 1, rates.color, Math.max(1, deliverables * 0.5));
+      }
+      addLine(lines, "Post", "음악/BGM", 1, 1, rates.music);
+      addLine(lines, "Post", "마스터링", deliverables, 1, rates.mastering);
+
+      if (el("voice").checked) {
+        addLine(lines, "Post", "성우료", 1, 1, rates.voice);
+        addLine(lines, "Post", "녹음료", 1, 1, rates.recording);
+      }
+
+      if (el("drone").checked && !isEditOnly) addLine(lines, "Production", "드론", 1, shootDays, rates.drone);
+      if (el("photo").checked && !isEditOnly) addLine(lines, "Production", "포토", 1, shootDays, rates.photo);
+      if (el("model").checked && !isEditOnly) {
+        addLine(lines, "Production", "모델", 1, shootDays, rates.model);
+        addLine(lines, "Production", "분장팀", 1, shootDays, rates.makeup);
+      }
+      if (el("place").checked && !isEditOnly) addLine(lines, "Production", "장소대여", 1, shootDays, rates.place);
+
+      if (category === "motion") {
+        addLine(lines, "Post", "C.G기획료", 1, 1, 150000, cx);
+        if (state.complexity === "advanced") addLine(lines, "Post", "애니메이션", 1, 1, rates.animation);
+      }
+
+      if (category === "product" && state.complexity === "advanced") {
+        addLine(lines, "Post", "3D", 1, 1, rates.threeD);
+      }
+
+      return lines;
+    }
+
+    function update() {
+      el("shootDaysOut").value = `${el("shootDays").value}일`;
+      el("runtimeOut").value = `${el("runtime").value}분`;
+      el("deliverablesOut").value = `${el("deliverables").value}개`;
+
+      const lines = buildLines();
+      const phaseTotals = lines.reduce((acc, line) => {
+        acc[line.phase] = (acc[line.phase] || 0) + line.amount;
+        return acc;
+      }, { Pre: 0, Production: 0, Post: 0 });
+      const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
+      const vat = subtotal * 0.1;
+      const total = subtotal + vat;
+      const maxPhase = Math.max(phaseTotals.Pre, phaseTotals.Production, phaseTotals.Post, 1);
+
+      el("subtotal").textContent = money(subtotal);
+      el("vat").textContent = money(vat);
+      el("totalIncVat").textContent = money(total);
+      el("lineCount").textContent = `${lines.length}개`;
+      el("preTotal").textContent = money(phaseTotals.Pre);
+      el("prodTotal").textContent = money(phaseTotals.Production);
+      el("postTotal").textContent = money(phaseTotals.Post);
+      el("preBar").style.width = `${phaseTotals.Pre / maxPhase * 100}%`;
+      el("prodBar").style.width = `${phaseTotals.Production / maxPhase * 100}%`;
+      el("postBar").style.width = `${phaseTotals.Post / maxPhase * 100}%`;
+
+      const rows = lines.map(line => `
+        <tr>
+          <td>${line.phase}</td>
+          <td>${line.item}</td>
+          <td class="num">${line.qty.toLocaleString("ko-KR")}</td>
+          <td class="num">${line.days.toLocaleString("ko-KR")}</td>
+          <td class="num">${money(line.unit)}</td>
+          <td class="num">${money(line.amount)}</td>
+        </tr>
+      `).join("");
+      el("lineRows").innerHTML = rows || `<tr><td colspan="6" class="muted">선택된 견적 항목이 없습니다.</td></tr>`;
+
+      const guard = guardrails[el("category").value];
+      const box = el("guardrail");
+      const low = guard.p25 * 0.7;
+      const high = guard.p75 * 1.5;
+      box.classList.toggle("warn", subtotal < low || subtotal > high);
+      if (subtotal < low) {
+        box.textContent = `${guard.label} 과거 견적보다 낮은 편입니다. 기본 진행비나 편집 범위가 빠졌는지 확인이 필요합니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
+      } else if (subtotal > high) {
+        box.textContent = `${guard.label} 과거 견적 상단보다 높은 편입니다. 옵션이 많은 고난도 견적으로 보고 관리자 검토를 붙이는 게 좋습니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
+      } else {
+        box.textContent = `${guard.label} 과거 견적 범위 안에 있습니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
+      }
+    }
+
+    function applyPreset(name) {
+      const preset = presets[name];
+      if (!preset) return;
+      el("category").value = preset.category;
+      el("shootDays").value = preset.shootDays;
+      el("runtime").value = preset.runtime;
+      el("deliverables").value = preset.deliverables;
+      state.complexity = preset.complexity;
+      ["planning", "voice", "drone", "photo", "model", "place", "motionPack"].forEach(id => {
+        el(id).checked = Boolean(preset[id]);
+      });
+      document.querySelectorAll("[data-complexity]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.complexity === state.complexity));
+      });
+      document.querySelectorAll("[data-preset]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.preset === name));
+      });
+      update();
+    }
+
+    document.querySelectorAll("input, select").forEach(input => {
+      input.addEventListener("input", update);
+      input.addEventListener("change", update);
+    });
+
+    document.querySelectorAll("[data-complexity]").forEach(button => {
+      button.addEventListener("click", () => {
+        state.complexity = button.dataset.complexity;
+        document.querySelectorAll("[data-complexity]").forEach(item => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        update();
+      });
+    });
+
+    document.querySelectorAll("[data-preset]").forEach(button => {
+      button.addEventListener("click", () => applyPreset(button.dataset.preset));
+    });
+
+    update();
+  </script>
+</body>
+</html>
