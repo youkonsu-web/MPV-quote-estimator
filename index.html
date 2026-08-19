@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>뮤플비 모의견적 계산기</title>
+  <title>MPV 예상견적 산출시스템</title>
   <style>
     :root {
-      --bg: #f6f7f9;
+      --bg: #f4f9ff;
       --surface: #ffffff;
       --surface-2: #f0f4f8;
       --text: #1d2430;
@@ -221,7 +221,9 @@
 
     input[type="range"] {
       width: 100%;
-      accent-color: var(--primary);
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
     }
 
     .segmented {
@@ -355,10 +357,6 @@
       color: #673333;
     }
 
-    .line-table-wrap {
-      overflow-x: auto;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -426,63 +424,964 @@
         text-align: left;
       }
     }
+
+    :root {
+      --bg: #f5f9ff;
+      --surface: #ffffff;
+      --surface-2: #f1f7ff;
+      --text: #0e0e0e;
+      --muted: rgba(14, 14, 14, 0.58);
+      --line: rgba(14, 14, 14, 0.1);
+      --primary: #1e8df1;
+      --primary-2: #52adff;
+      --accent: #1c1c2e;
+      --warn: #d85b4a;
+      --ok: #1e8df1;
+      --shadow: 0 18px 48px rgba(14, 14, 14, 0.08);
+    }
+
+    body {
+      background: linear-gradient(180deg, #f5f9ff 0%, #fbfdff 48%, #f3f8ff 100%);
+      font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+
+    .app {
+      display: block;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      display: none;
+    }
+
+    .content-brand {
+      display: grid;
+      grid-template-columns: minmax(0, 680px) minmax(240px, 310px);
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: -14px;
+    }
+
+    .content-brand .brand {
+      min-width: 0;
+      transform: translateX(10px);
+    }
+
+    .brand {
+      min-width: 172px;
+      gap: 14px;
+    }
+
+    .mark {
+      width: 86px;
+      height: auto;
+      display: block;
+      border-radius: 0;
+      background: transparent;
+      object-fit: contain;
+    }
+
+    .brand strong {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .nav-note {
+      max-width: 520px;
+      margin: 0;
+      color: rgba(14, 14, 14, 0.64);
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.55;
+    }
+
+    .preset-list {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .preset-btn {
+      width: auto;
+      min-height: 42px;
+      border: 1px solid rgba(30, 141, 241, 0.18);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: none;
+      white-space: nowrap;
+    }
+
+    .preset-btn:hover,
+    .preset-btn[aria-pressed="true"] {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(14, 14, 14, 0.12);
+    }
+
+    main {
+      width: min(1280px, calc(100% - 44px));
+      margin: 0 auto;
+      padding: 64px 0 72px;
+      gap: 32px;
+    }
+
+    .topbar {
+      min-height: 250px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, 390px);
+      align-items: end;
+      gap: 42px;
+      padding: 30px 0 24px;
+      border-bottom: 1px solid rgba(14, 14, 14, 0.08);
+    }
+
+    .topbar > div:first-child::before {
+      content: "CORPORATE VIDEO QUOTE";
+      display: block;
+      width: fit-content;
+      margin-bottom: 22px;
+      padding-left: 38px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      background: linear-gradient(var(--primary), var(--primary)) left 50% / 26px 2px no-repeat;
+    }
+
+    h1 {
+      max-width: 700px;
+      font-size: clamp(44px, 6vw, 78px);
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    h1::after {
+      content: "기준이 있는 견적.";
+      display: block;
+      color: var(--primary);
+    }
+
+    .subtitle {
+      max-width: 600px;
+      margin-top: 22px;
+      color: rgba(14, 14, 14, 0.68);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.65;
+    }
+
+    .result-pill {
+      position: relative;
+      min-width: 0;
+      padding: 28px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(30, 141, 241, 0.18);
+      border-radius: 8px;
+      box-shadow: 0 22px 54px rgba(14, 14, 14, 0.1);
+    }
+
+    .result-pill::before {
+      content: "?";
+      position: absolute;
+      right: 22px;
+      top: 12px;
+      color: rgba(30, 141, 241, 0.12);
+      font-size: 104px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .result-pill span {
+      position: relative;
+      color: rgba(14, 14, 14, 0.56);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .result-pill strong {
+      position: relative;
+      margin-top: 12px;
+      color: var(--primary);
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 900;
+    }
+
+    .workspace {
+      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(14, 14, 14, 0.1);
+      border-radius: 8px;
+      box-shadow: 0 18px 48px rgba(28, 28, 46, 0.08);
+    }
+
+    .panel-header {
+      padding: 22px 22px 0;
+    }
+
+    .panel-title {
+      color: var(--text);
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .panel-body {
+      padding: 22px;
+      gap: 20px;
+    }
+
+    .field-label {
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .field-label output {
+      color: var(--primary);
+      font-weight: 900;
+    }
+
+    .field-title-line {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .inline-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(14, 14, 14, 0.7);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .inline-check input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary);
+    }
+
+    .inline-check small {
+      color: var(--primary);
+      font-weight: 900;
+    }
+
+    select,
+    input[type="number"] {
+      min-height: 46px;
+      border: 1px solid rgba(14, 14, 14, 0.13);
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      outline: none;
+    }
+
+    select:focus,
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 14, 14, 0.08);
+    }
+
+    input[type="range"] {
+      height: 28px;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #c8d0d8 0%, #aeb8c2 100%);
+      box-shadow: inset 0 1px 1px rgba(14, 14, 14, 0.12), 0 1px 0 rgba(255, 255, 255, 0.82);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 24px;
+      height: 24px;
+      margin-top: -9px;
+      border: 4px solid var(--primary);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(14, 14, 14, 0.22);
+    }
+
+    input[type="range"]:focus-visible {
+      outline: none;
+    }
+
+    input[type="range"]:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(30, 141, 241, 0.16), 0 6px 14px rgba(14, 14, 14, 0.22);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #c8d0d8 0%, #aeb8c2 100%);
+      box-shadow: inset 0 1px 1px rgba(14, 14, 14, 0.12), 0 1px 0 rgba(255, 255, 255, 0.82);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: 4px solid var(--primary);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(14, 14, 14, 0.22);
+    }
+
+    .segmented {
+      padding: 4px;
+      gap: 4px;
+      background: #eef6ff;
+      border: 1px solid rgba(30, 141, 241, 0.12);
+      border-radius: 8px;
+    }
+
+    .segmented button {
+      min-height: 42px;
+      border: 0;
+      background: transparent;
+      color: rgba(14, 14, 14, 0.66);
+      border-radius: 6px;
+      font-weight: 900;
+    }
+
+    .segmented button[aria-pressed="true"] {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(14, 14, 14, 0.12);
+    }
+
+    .check-row {
+      min-height: 54px;
+      grid-template-columns: 22px 1fr auto;
+      border: 1px solid rgba(14, 14, 14, 0.09);
+      background: #fff;
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .check-row:hover {
+      border-color: rgba(30, 141, 241, 0.34);
+      box-shadow: 0 10px 24px rgba(14, 14, 14, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .check-row input {
+      accent-color: var(--primary);
+    }
+
+    .check-row label {
+      font-weight: 800;
+    }
+
+    .check-row small {
+      color: rgba(14, 14, 14, 0.46);
+      font-weight: 700;
+    }
+
+    .metric {
+      background: #f7fbff;
+      border: 1px solid rgba(30, 141, 241, 0.13);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .metric span {
+      color: rgba(14, 14, 14, 0.56);
+      font-weight: 800;
+    }
+
+    .metric strong {
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .track {
+      height: 12px;
+      background: #e4f0fd;
+    }
+
+    .fill {
+      background: var(--primary);
+      box-shadow: 0 4px 12px rgba(14, 14, 14, 0.1);
+    }
+
+    .fill.prod {
+      background: var(--accent);
+      box-shadow: 0 4px 12px rgba(14, 14, 14, 0.1);
+    }
+
+    .fill.post {
+      background: var(--primary-2);
+      box-shadow: 0 4px 12px rgba(14, 14, 14, 0.1);
+    }
+
+    .bar-row {
+      font-weight: 800;
+    }
+
+    .bar-row strong {
+      font-weight: 900;
+    }
+
+    .guardrail {
+      border-left: 0;
+      background: #1c1c2e;
+      color: #fff;
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-weight: 700;
+    }
+
+    .guardrail.warn {
+      background: #fff3f1;
+      color: #8a2f25;
+      border: 1px solid rgba(216, 91, 74, 0.25);
+    }
+
+    table {
+      font-size: 14px;
+    }
+
+    th {
+      color: rgba(14, 14, 14, 0.56);
+      background: #f7fbff;
+      font-weight: 900;
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(14, 14, 14, 0.08);
+    }
+
+    td {
+      font-weight: 650;
+    }
+
+    .muted {
+      color: rgba(14, 14, 14, 0.54);
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1080px) {
+      .content-brand {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .preset-list {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        display: block;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav-note {
+        display: none;
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .mark {
+        width: 78px;
+      }
+
+      main {
+        width: calc(100% - 32px);
+        padding: 32px 0 48px;
+      }
+
+      .topbar {
+        padding-top: 10px;
+        gap: 24px;
+      }
+
+      .topbar > div:first-child::before {
+        margin-bottom: 16px;
+        font-size: 11px;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+
+      .subtitle {
+        font-size: 16px;
+      }
+
+      .result-pill {
+        width: 100%;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid,
+      .segmented {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 84px minmax(0, 1fr);
+      }
+
+      .bar-row strong {
+        grid-column: 2;
+        text-align: left;
+      }
+
+      .preset-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .preset-btn {
+        width: 100%;
+      }
+    }
+
+    main {
+      width: min(1120px, calc(100% - 44px));
+      padding-top: 68px;
+    }
+
+    .workspace {
+      grid-template-columns: minmax(0, 680px) minmax(240px, 310px);
+      justify-content: center;
+      align-items: stretch;
+      gap: 24px;
+    }
+
+    .options-panel {
+      width: 100%;
+      align-self: start;
+    }
+
+    .side-column {
+      display: grid;
+      gap: 18px;
+      align-items: start;
+      align-self: stretch;
+    }
+
+    .quote-panel {
+      position: relative;
+      align-self: start;
+      overflow: hidden;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      border-color: rgba(30, 141, 241, 0.2);
+      box-shadow: 0 18px 42px rgba(14, 14, 14, 0.09);
+      will-change: transform;
+    }
+
+    .quote-panel::before {
+      content: "?";
+      position: absolute;
+      right: 14px;
+      top: 8px;
+      color: rgba(30, 141, 241, 0.1);
+      font-size: 84px;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .quote-panel .panel-header {
+      padding: 18px 18px 0;
+    }
+
+    .quote-panel .panel-title {
+      font-size: 19px;
+    }
+
+    .quote-panel .panel-header,
+    .quote-panel .panel-body {
+      position: relative;
+    }
+
+    .quote-panel .panel-body {
+      padding: 18px;
+      gap: 16px;
+    }
+
+    .quote-panel .summary-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .quote-panel .metric {
+      background: rgba(255, 255, 255, 0.48);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 13px 14px;
+    }
+
+    .quote-panel .metric:not(:last-child) span,
+    .quote-panel .metric:not(:last-child) strong {
+      font-weight: 600;
+    }
+
+    .quote-panel .metric span {
+      font-size: 12px;
+    }
+
+    .quote-panel .metric strong {
+      font-size: 19px;
+    }
+
+    .quote-panel .metric:last-child {
+      background: var(--primary);
+      border-color: var(--primary);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: 0 12px 24px rgba(14, 14, 14, 0.13);
+    }
+
+    .quote-panel .metric:last-child span,
+    .quote-panel .metric:last-child strong {
+      color: #fff;
+    }
+
+    .quote-panel .metric:last-child strong {
+      font-size: clamp(25px, 2.5vw, 32px);
+    }
+
+    .quote-panel .quote-note {
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 1.55;
+    }
+
+    .inquiry-panel {
+      width: min(680px, 100%);
+      margin-left: max(0px, calc((100% - 1014px) / 2));
+      margin-right: auto;
+      background: rgba(255, 255, 255, 0.94);
+    }
+
+    .quote-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .quote-form label {
+      display: grid;
+      gap: 6px;
+      color: rgba(14, 14, 14, 0.68);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .quote-form input,
+    .quote-form textarea,
+    .quote-form select {
+      width: 100%;
+      border: 1px solid rgba(14, 14, 14, 0.13);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 400;
+      outline: none;
+    }
+
+    .quote-form input::placeholder,
+    .quote-form textarea::placeholder {
+      font-weight: 400;
+    }
+
+    .quote-form input,
+    .quote-form select {
+      min-height: 42px;
+      padding: 10px 12px;
+    }
+
+    .quote-form textarea {
+      min-height: 118px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .quote-form input:focus,
+    .quote-form textarea:focus,
+    .quote-form select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(14, 14, 14, 0.08);
+    }
+
+    .quote-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .quote-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 14px 30px rgba(14, 14, 14, 0.14);
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .quote-cta:hover {
+      background: #0d7dde;
+      box-shadow: 0 18px 36px rgba(14, 14, 14, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .submit-toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      z-index: 100;
+      width: min(360px, calc(100% - 32px));
+      padding: 18px 20px;
+      border: 1px solid rgba(30, 141, 241, 0.18);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.55;
+      text-align: center;
+      box-shadow: 0 22px 54px rgba(14, 14, 14, 0.16);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, calc(-50% + 10px));
+      transition: opacity 180ms ease, transform 180ms ease;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .submit-toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    @media (max-width: 520px) {
+      .quote-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .checks {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .option-section {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-section + .option-section {
+      margin-top: 22px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(14, 14, 14, 0.08);
+    }
+
+    .option-section-title {
+      margin: 0;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .fixed-items {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .fixed-item {
+      min-height: 76px;
+      padding: 16px;
+      border: 1px solid rgba(30, 141, 241, 0.18);
+      border-radius: 8px;
+      background: #f7fbff;
+    }
+
+    .fixed-item strong,
+    .fixed-item span {
+      display: block;
+    }
+
+    .fixed-item strong {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .fixed-item span {
+      margin-top: 6px;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .check-row {
+      min-height: 76px;
+      grid-template-columns: 24px 1fr;
+      grid-template-rows: auto auto;
+      padding: 16px;
+      gap: 4px 12px;
+    }
+
+    .check-row input {
+      grid-row: 1 / span 2;
+      margin-top: 3px;
+    }
+
+    .check-row small {
+      grid-column: 2;
+      text-align: left;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .check-row:has(input:checked) {
+      border-color: rgba(30, 141, 241, 0.48);
+      background: #f7fbff;
+      box-shadow: 0 12px 26px rgba(14, 14, 14, 0.1);
+    }
+
+    .check-row:has(input:disabled),
+    .inline-check:has(input:disabled) {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .check-row:has(input:disabled) {
+      background: #f8f8f8;
+      box-shadow: none;
+      transform: none;
+    }
+
+    @media (max-width: 980px) {
+      main {
+        width: calc(100% - 32px);
+        padding-top: 28px;
+      }
+
+      .content-brand {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .quote-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .checks,
+      .fixed-items {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="mark">MV</div>
-        <div>
-          <strong>뮤플비</strong>
-          <span>모의견적 시스템</span>
-        </div>
-      </div>
-      <p class="nav-note">
-        고객이 필요한 제작 옵션을 고르면 견적서 항목 기준으로 예상 금액이 즉시 계산됩니다.
-      </p>
-      <div class="preset-list" aria-label="빠른 구성">
-        <button class="preset-btn" type="button" data-preset="brand" aria-pressed="true">홍보영상 기본</button>
-        <button class="preset-btn" type="button" data-preset="event" aria-pressed="false">행사 스케치</button>
-        <button class="preset-btn" type="button" data-preset="edit" aria-pressed="false">편집만</button>
-        <button class="preset-btn" type="button" data-preset="product" aria-pressed="false">제품홍보 촬영</button>
-      </div>
-    </aside>
-
     <main>
-      <section class="topbar">
-        <div>
-          <h1>실시간 예상견적</h1>
-          <p class="subtitle">촬영일수, 성우, 드론, 사진 촬영 같은 옵션을 조정하면 바로 견적이 갱신됩니다.</p>
+      <div class="content-brand">
+        <div class="brand">
+          <img class="mark" src="assets/mpv-logo.webp" alt="MPV">
+          <strong>예상견적 산출시스템</strong>
         </div>
-        <div class="result-pill" aria-live="polite">
-          <span>예상 견적가 VAT 포함</span>
-          <strong id="totalIncVat">0원</strong>
-        </div>
-      </section>
+      </div>
 
       <section class="workspace">
-        <div class="panel">
+        <div class="panel options-panel">
           <div class="panel-header">
-            <h2 class="panel-title">옵션 선택</h2>
+            <h2 class="panel-title">제작 옵션 선택</h2>
           </div>
           <div class="panel-body">
             <div class="field">
               <label class="field-label" for="category">영상 유형</label>
               <select id="category">
                 <option value="brand">홍보/브랜딩</option>
+                <option value="shootOnly">촬영만</option>
                 <option value="event">행사/스케치</option>
                 <option value="edu">강의/교육</option>
                 <option value="product">제품홍보</option>
                 <option value="shortform">숏폼/SNS/유튜브</option>
                 <option value="motion">모션그래픽</option>
-                <option value="edit">편집중심</option>
               </select>
             </div>
 
             <div class="field">
               <div class="field-label">
-                <label for="shootDays">촬영 필요일수</label>
+                <span class="field-title-line">
+                  <label for="shootDays">촬영 필요일수</label>
+                  <label class="inline-check" for="localTravel">
+                    <input id="localTravel" type="checkbox">
+                    지방촬영 <small>+100,000원/일</small>
+                  </label>
+                </span>
                 <output id="shootDaysOut">1일</output>
               </div>
               <input id="shootDays" type="range" min="0" max="7" step="1" value="1">
@@ -490,137 +1389,197 @@
 
             <div class="field">
               <div class="field-label">
-                <label for="runtime">완성 영상 길이</label>
+                <label for="runtime">영상길이</label>
                 <output id="runtimeOut">3분</output>
               </div>
               <input id="runtime" type="range" min="1" max="15" step="1" value="3">
             </div>
 
             <div class="field">
-              <div class="field-label">
-                <label for="deliverables">납품본 개수</label>
-                <output id="deliverablesOut">1개</output>
-              </div>
-              <input id="deliverables" type="range" min="1" max="8" step="1" value="1">
-            </div>
-
-            <div class="field">
-              <span class="field-label">제작 난이도</span>
-              <div class="segmented" id="complexityGroup">
-                <button type="button" data-complexity="simple" aria-pressed="false">단순</button>
-                <button type="button" data-complexity="normal" aria-pressed="true">일반</button>
-                <button type="button" data-complexity="advanced" aria-pressed="false">연출/고급</button>
-              </div>
-            </div>
-
-            <div class="field">
               <span class="field-label">추가 옵션</span>
-              <div class="checks">
-                <div class="check-row">
-                  <input id="planning" type="checkbox" checked>
-                  <label for="planning">기획/구성</label>
-                  <small>기획료, 콘티</small>
+              <div class="option-section">
+                <h3 class="option-section-title">Pre-production</h3>
+                <div class="checks">
+                  <div class="check-row">
+                    <input id="proposal" type="checkbox" checked>
+                    <label for="proposal">기획안</label>
+                    <small>+200,000원</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="storyboard" type="checkbox" checked>
+                    <label for="storyboard">콘티/스토리보드</label>
+                    <small>+200,000원</small>
+                  </div>
                 </div>
-                <div class="check-row">
-                  <input id="voice" type="checkbox">
-                  <label for="voice">성우 내레이션</label>
-                  <small>성우료, 녹음료</small>
+              </div>
+
+              <div class="option-section">
+                <h3 class="option-section-title">Production</h3>
+                <div class="checks">
+                  <div class="check-row">
+                    <input id="drone" type="checkbox">
+                    <label for="drone">드론 촬영</label>
+                    <small>+200,000원/일</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="photo" type="checkbox">
+                    <label for="photo">사진 촬영 포함</label>
+                    <small>+1,000,000원/일</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="model" type="checkbox">
+                    <label for="model">모델 섭외</label>
+                    <small>+300,000원/일</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="foreignModel" type="checkbox">
+                    <label for="foreignModel">외국인 모델</label>
+                    <small>+150,000원/일</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="makeup" type="checkbox">
+                    <label for="makeup">헤어/메이크업</label>
+                    <small>+700,000원/일</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="place" type="checkbox">
+                    <label for="place">장소 대여</label>
+                    <small>변동</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="syncSound" type="checkbox">
+                    <label for="syncSound">동시녹음</label>
+                    <small>+200,000원</small>
+                  </div>
                 </div>
-                <div class="check-row">
-                  <input id="drone" type="checkbox">
-                  <label for="drone">드론 촬영</label>
-                  <small>드론</small>
+              </div>
+
+              <div class="option-section">
+                <h3 class="option-section-title">Post-production</h3>
+                <div class="fixed-items">
+                  <div class="fixed-item">
+                    <strong>기본 편집</strong>
+                    <span>300,000원/분 포함</span>
+                  </div>
+                  <div class="fixed-item">
+                    <strong>종합편집/마스터링</strong>
+                    <span id="finalEditHint">100,000원/분 포함</span>
+                  </div>
                 </div>
-                <div class="check-row">
-                  <input id="photo" type="checkbox">
-                  <label for="photo">사진 촬영 포함</label>
-                  <small>포토</small>
-                </div>
-                <div class="check-row">
-                  <input id="model" type="checkbox">
-                  <label for="model">모델/분장 필요</label>
-                  <small>모델, 분장팀</small>
-                </div>
-                <div class="check-row">
-                  <input id="place" type="checkbox">
-                  <label for="place">장소 대여 필요</label>
-                  <small>장소대여</small>
-                </div>
-                <div class="check-row">
-                  <input id="motionPack" type="checkbox" checked>
-                  <label for="motionPack">2D 그래픽/자막</label>
-                  <small>2D, 색보정</small>
+                <div class="checks">
+                  <div class="check-row">
+                    <input id="voice" type="checkbox">
+                    <label for="voice">성우/내레이션</label>
+                    <small>+300,000원</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="foreignVoice" type="checkbox">
+                    <label for="foreignVoice">외국인 성우</label>
+                    <small>+100,000원</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="motionPack" type="checkbox" checked>
+                    <label for="motionPack">2D 그래픽/자막</label>
+                    <small>+200,000원~</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="translation" type="checkbox">
+                    <label for="translation">자막 통번역 필요</label>
+                    <small>+100,000원/분</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="colorGrading" type="checkbox" checked>
+                    <label for="colorGrading">컬러 그레이딩</label>
+                    <small>+100,000원~</small>
+                  </div>
+                  <div class="check-row">
+                    <input id="bgm" type="checkbox" checked>
+                    <label for="bgm">BGM/SFX</label>
+                    <small>+100,000원~</small>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">견적 결과</h2>
+        <div class="side-column">
+          <div class="panel quote-panel" aria-live="polite">
+            <div class="panel-header">
+              <h2 class="panel-title">실시간 예상 견적</h2>
+            </div>
+            <div class="panel-body">
+              <div class="summary-grid">
+                <div class="metric">
+                  <span>공급가</span>
+                  <strong id="subtotal">0원</strong>
+                </div>
+                <div class="metric">
+                  <span>VAT 10%</span>
+                  <strong id="vat">0원</strong>
+                </div>
+                <div class="metric">
+                  <span>총 견적</span>
+                  <strong id="totalIncVat">0원</strong>
+                </div>
+              </div>
+              <p class="muted quote-note">현재 금액은 선택 조건을 기준으로 한 대략적인 예상 견적입니다. 실제 견적을 희망하시면 아래 상세 내용에 예산과 참고 레퍼런스를 함께 남겨주세요. 확인 후 가능한 범위와 실 견적을 빠르게 안내해드리겠습니다.</p>
+            </div>
           </div>
-          <div class="panel-body">
-            <div class="summary-grid">
-              <div class="metric">
-                <span>VAT 별도</span>
-                <strong id="subtotal">0원</strong>
-              </div>
-              <div class="metric">
-                <span>VAT 10%</span>
-                <strong id="vat">0원</strong>
-              </div>
-              <div class="metric">
-                <span>선택 옵션 수</span>
-                <strong id="lineCount">0개</strong>
-              </div>
-            </div>
+        </div>
+      </section>
 
-            <div class="bars" aria-label="제작 단계별 금액">
-              <div class="bar-row">
-                <span>Pre</span>
-                <div class="track"><div class="fill" id="preBar"></div></div>
-                <strong id="preTotal">0원</strong>
-              </div>
-              <div class="bar-row">
-                <span>Production</span>
-                <div class="track"><div class="fill prod" id="prodBar"></div></div>
-                <strong id="prodTotal">0원</strong>
-              </div>
-              <div class="bar-row">
-                <span>Post</span>
-                <div class="track"><div class="fill post" id="postBar"></div></div>
-                <strong id="postTotal">0원</strong>
-              </div>
+      <section class="panel inquiry-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">상세 견적 문의</h2>
+        </div>
+        <div class="panel-body">
+          <form class="quote-form" id="quoteForm" action="https://musicplusvideo.co.kr/quote" method="get">
+            <input type="hidden" name="website" value="">
+            <input type="hidden" name="category" id="submitCategory" value="기업 홍보영상">
+            <input type="hidden" name="details" id="submitDetails" value="">
+            <label>
+              제목
+              <input id="submitTitle" name="title" type="text" placeholder="ex. 회사 소개 영상 제작 문의" required>
+            </label>
+            <div class="quote-form-grid">
+              <label>
+                연락처
+                <input name="phone" type="tel" placeholder="010-0000-0000" required>
+              </label>
+              <label>
+                예산
+                <select name="budget">
+                  <option>협의</option>
+                  <option>100만원대</option>
+                  <option>300만원대</option>
+                  <option>500만원대</option>
+                  <option>1,000만원 이상</option>
+                </select>
+              </label>
             </div>
-
-            <div id="guardrail" class="guardrail">과거 유사 견적 범위와 비교 중입니다.</div>
-
-            <div class="line-table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>구분</th>
-                    <th>항목</th>
-                    <th class="num">수량</th>
-                    <th class="num">일수</th>
-                    <th class="num">단가</th>
-                    <th class="num">금액</th>
-                  </tr>
-                </thead>
-                <tbody id="lineRows"></tbody>
-              </table>
-            </div>
-            <p class="muted">실제 계약 견적은 촬영 장소, 일정, 레퍼런스 난이도, 수정 범위 확인 후 확정됩니다.</p>
-          </div>
+            <label>
+              상세 내용
+              <textarea id="userDetails" placeholder="희망 예산, 참고 레퍼런스 링크, 제작 목적, 일정, 사용처 등을 적어주세요."></textarea>
+            </label>
+            <label>
+              비밀번호
+              <input name="password" type="password" placeholder="수정/확인용 비밀번호" required>
+            </label>
+            <button class="quote-cta" type="submit">견적문의 제출하기</button>
+          </form>
         </div>
       </section>
     </main>
   </div>
+  <div class="submit-toast" id="submitToast" role="status" aria-live="polite">
+    견적문의가 정상적으로 접수되었습니다.<br>
+    빠른 시간 내로 안내드리겠습니다.
+  </div>
 
   <script>
     const rates = {
-      planning: 300000,
+      proposal: 200000,
       storyboard: 200000,
       pd: 400000,
       director: 800000,
@@ -631,43 +1590,40 @@
       light: 100000,
       edit: 300000,
       graphic2d: 200000,
+      translation: 100000,
       color: 100000,
       music: 100000,
       mastering: 50000,
       voice: 250000,
       recording: 50000,
+      foreignVoice: 100000,
       drone: 200000,
       photo: 1000000,
-      model: 400000,
+      model: 300000,
+      foreignModel: 150000,
       makeup: 700000,
       place: 500000,
       meal: 10000,
       fuel: 100000,
+      syncSound: 200000,
       threeD: 2000000,
       animation: 1200000
     };
 
-    const guardrails = {
-      brand: { label: "홍보/브랜딩", p25: 2000000, median: 3600000, p75: 6100000 },
-      event: { label: "행사/스케치", p25: 1150000, median: 2350000, p75: 3100000 },
-      edu: { label: "강의/교육", p25: 1000000, median: 1236364, p75: 5600000 },
-      product: { label: "제품홍보", p25: 4500000, median: 5400000, p75: 8725000 },
-      shortform: { label: "숏폼/SNS/유튜브", p25: 2090909, median: 2500000, p75: 5625000 },
-      motion: { label: "모션그래픽", p25: 1302000, median: 1500000, p75: 4750000 },
-      edit: { label: "편집중심", p25: 1175000, median: 1772727, p75: 3550000 }
+    const finalEditRates = {
+      brand: 100000,
+      shootOnly: 0,
+      event: 50000,
+      edu: 50000,
+      product: 100000,
+      shortform: 70000,
+      motion: 1000000
     };
-
-    const presets = {
-      brand: { category: "brand", shootDays: 1, runtime: 3, deliverables: 1, complexity: "normal", planning: true, voice: false, drone: false, photo: false, model: false, place: false, motionPack: true },
-      event: { category: "event", shootDays: 1, runtime: 2, deliverables: 1, complexity: "simple", planning: false, voice: false, drone: false, photo: true, model: false, place: false, motionPack: true },
-      edit: { category: "edit", shootDays: 0, runtime: 3, deliverables: 1, complexity: "simple", planning: false, voice: false, drone: false, photo: false, model: false, place: false, motionPack: true },
-      product: { category: "product", shootDays: 1, runtime: 3, deliverables: 2, complexity: "advanced", planning: true, voice: false, drone: false, photo: false, model: true, place: true, motionPack: true }
-    };
-
-    const state = { complexity: "normal" };
 
     const money = value => `${Math.round(value).toLocaleString("ko-KR")}원`;
     const el = id => document.getElementById(id);
+    const displayedAmounts = { subtotal: 0, vat: 0, totalIncVat: 0 };
+    const amountAnimations = {};
 
     function runtimeMultiplier(minutes) {
       if (minutes <= 1) return 0.8;
@@ -677,148 +1633,217 @@
       return 2;
     }
 
-    function complexityMultiplier(value) {
-      if (value === "simple") return 0.75;
-      if (value === "advanced") return 1.3;
-      return 1;
-    }
-
-    function addLine(lines, phase, item, qty, days, unit, multiplier = 1) {
+    function addLine(lines, item, qty, days, unit, multiplier = 1) {
       const amount = qty * days * unit * multiplier;
       if (amount <= 0) return;
-      lines.push({ phase, item, qty, days, unit, amount });
+      lines.push({ item, qty, days, unit, amount });
     }
 
     function buildLines() {
       const category = el("category").value;
       const shootDays = Number(el("shootDays").value);
       const runtime = Number(el("runtime").value);
-      const deliverables = Number(el("deliverables").value);
       const rt = runtimeMultiplier(runtime);
-      const cx = complexityMultiplier(state.complexity);
+      const cx = 1;
       const lines = [];
-      const isEditOnly = category === "edit" || shootDays === 0;
-      const peopleDays = Math.max(shootDays, 1);
+      const isEditOnly = shootDays === 0;
 
-      if (el("planning").checked && !isEditOnly) {
-        addLine(lines, "Pre", "기획료", 1, 1, rates.planning, cx);
-        if (state.complexity !== "simple") addLine(lines, "Pre", "콘티", 1, 1, rates.storyboard, cx);
+      if (el("proposal").checked) {
+        addLine(lines, "기획안", 1, 1, rates.proposal, cx);
+      }
+      if (el("storyboard").checked) {
+        addLine(lines, "콘티", 1, 1, rates.storyboard, cx);
       }
 
       if (!isEditOnly) {
-        if (state.complexity === "advanced") addLine(lines, "Production", "PD", 1, peopleDays, rates.pd);
-        addLine(lines, "Production", "촬영감독", 1, shootDays, rates.cameraDirector);
-        if (state.complexity !== "simple") addLine(lines, "Production", "촬영부", 1, shootDays, rates.cameraAssistant);
-        addLine(lines, "Production", "카메라", 1, shootDays, rates.camera);
-        addLine(lines, "Production", "렌즈", 1, shootDays, rates.lens);
-        if (state.complexity === "advanced") addLine(lines, "Production", "조명", 2, shootDays, rates.light);
-        addLine(lines, "Production", "식비", Math.max(2, state.complexity === "advanced" ? 5 : 3), shootDays, rates.meal);
-        addLine(lines, "Production", "유류비", 1, shootDays, rates.fuel);
+        addLine(lines, "촬영감독", 1, shootDays, rates.cameraDirector);
+        addLine(lines, "촬영부", 1, shootDays, rates.cameraAssistant);
+        addLine(lines, "카메라", 1, shootDays, rates.camera);
+        addLine(lines, "렌즈", 1, shootDays, rates.lens);
+        addLine(lines, "식비", 3, shootDays, rates.meal);
+        if (el("localTravel").checked) addLine(lines, "유류비", 1, shootDays, rates.fuel);
       }
 
-      addLine(lines, "Post", "편집료", 1, 1, rates.edit, rt * cx);
+      addLine(lines, "기본 편집", runtime, 1, rates.edit, cx);
+      addLine(lines, "종합편집/마스터링", runtime, 1, finalEditRates[category] ?? finalEditRates.brand, cx);
       if (el("motionPack").checked) {
-        addLine(lines, "Post", "2D", 1, 1, rates.graphic2d, rt * cx);
-        addLine(lines, "Post", "색보정", 1, 1, rates.color, Math.max(1, deliverables * 0.5));
+        addLine(lines, "2D 그래픽/자막", 1, 1, rates.graphic2d, rt * cx);
       }
-      addLine(lines, "Post", "음악/BGM", 1, 1, rates.music);
-      addLine(lines, "Post", "마스터링", deliverables, 1, rates.mastering);
+      if (el("translation").checked) addLine(lines, "자막 통번역", runtime, 1, rates.translation);
+      if (el("colorGrading").checked) addLine(lines, "색보정", 1, 1, rates.color);
+      if (el("bgm").checked) addLine(lines, "BGM/SFX", 1, 1, rates.music);
 
       if (el("voice").checked) {
-        addLine(lines, "Post", "성우료", 1, 1, rates.voice);
-        addLine(lines, "Post", "녹음료", 1, 1, rates.recording);
+        addLine(lines, "성우료", 1, 1, rates.voice);
+        addLine(lines, "녹음료", 1, 1, rates.recording);
       }
+      if (el("foreignVoice").checked) addLine(lines, "외국인 성우", 1, 1, rates.foreignVoice);
 
-      if (el("drone").checked && !isEditOnly) addLine(lines, "Production", "드론", 1, shootDays, rates.drone);
-      if (el("photo").checked && !isEditOnly) addLine(lines, "Production", "포토", 1, shootDays, rates.photo);
-      if (el("model").checked && !isEditOnly) {
-        addLine(lines, "Production", "모델", 1, shootDays, rates.model);
-        addLine(lines, "Production", "분장팀", 1, shootDays, rates.makeup);
-      }
-      if (el("place").checked && !isEditOnly) addLine(lines, "Production", "장소대여", 1, shootDays, rates.place);
+      if (el("drone").checked && !isEditOnly) addLine(lines, "드론", 1, shootDays, rates.drone);
+      if (el("photo").checked && !isEditOnly) addLine(lines, "포토", 1, shootDays, rates.photo);
+      if (el("model").checked && !isEditOnly) addLine(lines, "모델", 1, shootDays, rates.model);
+      if (el("foreignModel").checked && !isEditOnly) addLine(lines, "외국인 모델", 1, shootDays, rates.foreignModel);
+      if (el("makeup").checked && !isEditOnly) addLine(lines, "헤어/메이크업", 1, shootDays, rates.makeup);
+      if (el("syncSound").checked && !isEditOnly) addLine(lines, "동시녹음", 1, 1, rates.syncSound);
 
       if (category === "motion") {
-        addLine(lines, "Post", "C.G기획료", 1, 1, 150000, cx);
-        if (state.complexity === "advanced") addLine(lines, "Post", "애니메이션", 1, 1, rates.animation);
-      }
-
-      if (category === "product" && state.complexity === "advanced") {
-        addLine(lines, "Post", "3D", 1, 1, rates.threeD);
+        addLine(lines, "C.G기획료", 1, 1, 150000, cx);
       }
 
       return lines;
     }
 
+    function updateOptionAvailability() {
+      const shootDays = Number(el("shootDays").value);
+      const category = el("category").value;
+      const shootingUnavailable = shootDays === 0;
+      ["localTravel", "drone", "photo", "model", "place", "syncSound"].forEach(id => {
+        const input = el(id);
+        input.disabled = shootingUnavailable;
+        if (shootingUnavailable) input.checked = false;
+      });
+      el("foreignModel").disabled = shootingUnavailable || !el("model").checked;
+      if (el("foreignModel").disabled) el("foreignModel").checked = false;
+      el("makeup").disabled = shootingUnavailable || !el("model").checked;
+      if (el("makeup").disabled) el("makeup").checked = false;
+      el("foreignVoice").disabled = !el("voice").checked;
+      if (el("foreignVoice").disabled) el("foreignVoice").checked = false;
+      el("translation").disabled = !el("motionPack").checked;
+      if (el("translation").disabled) el("translation").checked = false;
+    }
+
+    function selectedOptionLabels() {
+      return [...document.querySelectorAll(".check-row input[type='checkbox']:checked")]
+        .map(input => {
+          const label = document.querySelector(`label[for="${input.id}"]`);
+          return label ? label.textContent.trim() : input.id;
+        });
+    }
+
+    function runtimeLabel(value) {
+      const minutes = Number(value);
+      return minutes >= 15 ? "15분 이상" : `${minutes}분`;
+    }
+
+    function buildQuoteDetails(lines, subtotal, vat, total) {
+      const categorySelect = el("category");
+      const userDetails = el("userDetails").value.trim();
+      const selectedOptions = selectedOptionLabels();
+      return [
+        userDetails,
+        "",
+        "[예상 견적 산출 내용]",
+        `영상 유형: ${categorySelect.options[categorySelect.selectedIndex].textContent.trim()}`,
+        `촬영 필요일수: ${el("shootDays").value}일`,
+        `영상길이: ${runtimeLabel(el("runtime").value)}`,
+        `선택 옵션: ${selectedOptions.length ? selectedOptions.join(", ") : "없음"}`,
+        `공급가: ${money(subtotal)}`,
+        `VAT: ${money(vat)}`,
+        `총 견적: ${money(total)}`,
+        `산출 항목: ${lines.map(line => line.item).join(", ")}`
+      ].filter(Boolean).join("\n");
+    }
+
+    function updateQuoteForm(lines, subtotal, vat, total) {
+      const categorySelect = el("category");
+      const categoryLabel = categorySelect.options[categorySelect.selectedIndex].textContent.trim();
+      const categoryMap = {
+        brand: "기업 홍보영상",
+        shootOnly: "기타",
+        event: "행사 스케치",
+        edu: "교육/강의 콘텐츠",
+        product: "제품/서비스 소개",
+        shortform: "유튜브/숏폼 콘텐츠",
+        motion: "3D/모션그래픽"
+      };
+      el("submitCategory").value = categoryMap[categorySelect.value] || "기타";
+      if (!el("submitTitle").value.trim()) {
+        el("submitTitle").value = `${categoryLabel} 제작 견적 문의`;
+      }
+      el("submitDetails").value = buildQuoteDetails(lines, subtotal, vat, total);
+    }
+
+    function animateMoney(id, target) {
+      const start = displayedAmounts[id] ?? 0;
+      const end = Math.round(target);
+      if (start === end) {
+        el(id).textContent = money(end);
+        return;
+      }
+      if (amountAnimations[id]) cancelAnimationFrame(amountAnimations[id]);
+      const duration = 520;
+      const startTime = performance.now();
+      const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const value = start + (end - start) * easeOutCubic(progress);
+        displayedAmounts[id] = Math.round(value);
+        el(id).textContent = money(value);
+        if (progress < 1) {
+          amountAnimations[id] = requestAnimationFrame(tick);
+        } else {
+          displayedAmounts[id] = end;
+          el(id).textContent = money(end);
+          delete amountAnimations[id];
+        }
+      }
+
+      amountAnimations[id] = requestAnimationFrame(tick);
+    }
+
+    function setupFloatingQuote() {
+      const panel = document.querySelector(".quote-panel");
+      const column = document.querySelector(".side-column");
+      if (!panel || !column) return;
+
+      let currentY = 0;
+      let targetY = 0;
+
+      function measureTarget() {
+        if (window.matchMedia("(max-width: 900px)").matches) {
+          targetY = 0;
+          return;
+        }
+
+        const panelRect = panel.getBoundingClientRect();
+        const pageY = window.scrollY;
+        const start = column.offsetTop;
+        const viewportTarget = pageY + Math.max(96, (window.innerHeight - panelRect.height) / 2);
+        const documentLimit = document.documentElement.scrollHeight - panelRect.height - start - 48;
+        const maxY = Math.max(0, documentLimit);
+        targetY = Math.min(Math.max(0, viewportTarget - start), maxY);
+      }
+
+      function animateFloat() {
+        measureTarget();
+        currentY += (targetY - currentY) * 0.12;
+        if (Math.abs(targetY - currentY) < 0.2) currentY = targetY;
+        panel.style.transform = `translate3d(0, ${currentY.toFixed(2)}px, 0)`;
+        requestAnimationFrame(animateFloat);
+      }
+
+      animateFloat();
+    }
+
     function update() {
       el("shootDaysOut").value = `${el("shootDays").value}일`;
-      el("runtimeOut").value = `${el("runtime").value}분`;
-      el("deliverablesOut").value = `${el("deliverables").value}개`;
+      el("runtimeOut").value = runtimeLabel(el("runtime").value);
+      const finalEditRate = finalEditRates[el("category").value] ?? finalEditRates.brand;
+      el("finalEditHint").textContent = `${money(finalEditRate)}/분 포함`;
+      updateOptionAvailability();
 
       const lines = buildLines();
-      const phaseTotals = lines.reduce((acc, line) => {
-        acc[line.phase] = (acc[line.phase] || 0) + line.amount;
-        return acc;
-      }, { Pre: 0, Production: 0, Post: 0 });
       const subtotal = lines.reduce((sum, line) => sum + line.amount, 0);
       const vat = subtotal * 0.1;
       const total = subtotal + vat;
-      const maxPhase = Math.max(phaseTotals.Pre, phaseTotals.Production, phaseTotals.Post, 1);
 
       el("subtotal").textContent = money(subtotal);
+      displayedAmounts.subtotal = Math.round(subtotal);
       el("vat").textContent = money(vat);
-      el("totalIncVat").textContent = money(total);
-      el("lineCount").textContent = `${lines.length}개`;
-      el("preTotal").textContent = money(phaseTotals.Pre);
-      el("prodTotal").textContent = money(phaseTotals.Production);
-      el("postTotal").textContent = money(phaseTotals.Post);
-      el("preBar").style.width = `${phaseTotals.Pre / maxPhase * 100}%`;
-      el("prodBar").style.width = `${phaseTotals.Production / maxPhase * 100}%`;
-      el("postBar").style.width = `${phaseTotals.Post / maxPhase * 100}%`;
-
-      const rows = lines.map(line => `
-        <tr>
-          <td>${line.phase}</td>
-          <td>${line.item}</td>
-          <td class="num">${line.qty.toLocaleString("ko-KR")}</td>
-          <td class="num">${line.days.toLocaleString("ko-KR")}</td>
-          <td class="num">${money(line.unit)}</td>
-          <td class="num">${money(line.amount)}</td>
-        </tr>
-      `).join("");
-      el("lineRows").innerHTML = rows || `<tr><td colspan="6" class="muted">선택된 견적 항목이 없습니다.</td></tr>`;
-
-      const guard = guardrails[el("category").value];
-      const box = el("guardrail");
-      const low = guard.p25 * 0.7;
-      const high = guard.p75 * 1.5;
-      box.classList.toggle("warn", subtotal < low || subtotal > high);
-      if (subtotal < low) {
-        box.textContent = `${guard.label} 과거 견적보다 낮은 편입니다. 기본 진행비나 편집 범위가 빠졌는지 확인이 필요합니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
-      } else if (subtotal > high) {
-        box.textContent = `${guard.label} 과거 견적 상단보다 높은 편입니다. 옵션이 많은 고난도 견적으로 보고 관리자 검토를 붙이는 게 좋습니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
-      } else {
-        box.textContent = `${guard.label} 과거 견적 범위 안에 있습니다. 기준 중앙값은 ${money(guard.median)}입니다.`;
-      }
-    }
-
-    function applyPreset(name) {
-      const preset = presets[name];
-      if (!preset) return;
-      el("category").value = preset.category;
-      el("shootDays").value = preset.shootDays;
-      el("runtime").value = preset.runtime;
-      el("deliverables").value = preset.deliverables;
-      state.complexity = preset.complexity;
-      ["planning", "voice", "drone", "photo", "model", "place", "motionPack"].forEach(id => {
-        el(id).checked = Boolean(preset[id]);
-      });
-      document.querySelectorAll("[data-complexity]").forEach(button => {
-        button.setAttribute("aria-pressed", String(button.dataset.complexity === state.complexity));
-      });
-      document.querySelectorAll("[data-preset]").forEach(button => {
-        button.setAttribute("aria-pressed", String(button.dataset.preset === name));
-      });
-      update();
+      displayedAmounts.vat = Math.round(vat);
+      animateMoney("totalIncVat", total);
+      updateQuoteForm(lines, subtotal, vat, total);
     }
 
     document.querySelectorAll("input, select").forEach(input => {
@@ -826,21 +1851,32 @@
       input.addEventListener("change", update);
     });
 
-    document.querySelectorAll("[data-complexity]").forEach(button => {
-      button.addEventListener("click", () => {
-        state.complexity = button.dataset.complexity;
-        document.querySelectorAll("[data-complexity]").forEach(item => {
-          item.setAttribute("aria-pressed", String(item === button));
+    el("category").addEventListener("change", () => {
+      if (el("category").value === "shootOnly") {
+        ["colorGrading", "bgm", "motionPack", "translation", "voice", "foreignVoice"].forEach(id => {
+          el(id).checked = false;
         });
-        update();
-      });
+      }
+      update();
     });
 
-    document.querySelectorAll("[data-preset]").forEach(button => {
-      button.addEventListener("click", () => applyPreset(button.dataset.preset));
+    el("userDetails").addEventListener("input", update);
+    el("quoteForm").addEventListener("submit", event => {
+      event.preventDefault();
+      update();
+
+      const form = event.currentTarget;
+      const toast = el("submitToast");
+      toast.classList.add("is-visible");
+
+      window.setTimeout(() => {
+        const params = new URLSearchParams(new FormData(form));
+        window.location.href = `${form.action}?${params.toString()}`;
+      }, 900);
     });
 
     update();
+    setupFloatingQuote();
   </script>
 </body>
 </html>
